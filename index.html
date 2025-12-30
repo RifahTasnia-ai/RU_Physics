@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>রাবি পদার্থবিজ্ঞান মডেল টেস্ট ২০২৫</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans Bengali', sans-serif; background-color: #f1f5f9; color: #1e293b; }
+        .chart-container { 
+            position: relative; 
+            width: 100%; 
+            max-width: 400px; 
+            margin: 0 auto;
+            height: 300px; 
+        }
+        .option-radio:checked + label {
+            background-color: #e0f2fe;
+            border-color: #0284c7;
+            color: #0369a1;
+            font-weight: 600;
+        }
+        .correct-answer { background-color: #dcfce7 !important; border-color: #16a34a !important; color: #15803d !important; }
+        .wrong-answer { background-color: #fee2e2 !important; border-color: #dc2626 !important; color: #b91c1c !important; }
+        
+        /* Custom Scrollbar for question list */
+        .question-list::-webkit-scrollbar { width: 8px; }
+        .question-list::-webkit-scrollbar-track { background: #f1f5f9; }
+        .question-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .question-list::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+    
+    <!-- Chosen Palette: Slate (Background), Sky Blue (Primary), Emerald/Rose (Feedback) -->
+    <!-- Application Structure Plan:
+         1. Dashboard/Home: Selection screen for Model Test 1 or 2 with syllabus info.
+         2. Exam Interface: Scrollable list of 25 questions with radio inputs. Includes a sticky header for time/progress.
+         3. Analysis Engine: Real-time scoring logic.
+         4. Result Dashboard: Visual breakdown of performance using Chart.js (Accuracy & Topic Strength).
+         5. Solution Mode: Detailed explanations with "Short Tricks" for every question.
+    -->
+    <!-- Visualization & Content Choices:
+         - Doughnut Chart: Accuracy overview (Correct vs Wrong vs Skipped).
+         - Radar Chart: Topic-wise strength (Mechanics, Light, Modern Physics, etc.).
+         - Interactive Questions: Radio buttons with immediate state handling (though feedback is hidden until submit).
+         - Logic: Vanilla JS to handle state, scoring, and explanation toggling.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-200">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">⚛️</span>
+                <h1 class="text-lg md:text-xl font-bold text-slate-800">রাবি পদার্থবিজ্ঞান <span class="text-sky-600">মডেল টেস্ট</span></h1>
+            </div>
+            <div id="timer-display" class="hidden font-mono text-xl font-bold text-sky-700 bg-sky-50 px-3 py-1 rounded-lg border border-sky-100">
+                00:00
+            </div>
+            <button onclick="goHome()" class="text-sm font-medium text-slate-500 hover:text-slate-800">হোম</button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto px-4 py-6 flex-grow">
+        
+        <!-- View 1: Home / Test Selector -->
+        <div id="view-home" class="max-w-4xl mx-auto">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-800 mb-4">চূড়ান্ত প্রস্তুতি পর্ব</h2>
+                <p class="text-slate-600 max-w-2xl mx-auto">
+                    রাজশাহী বিশ্ববিদ্যালয়ের বিগত বছরের প্রশ্নের প্যাটার্ন বিশ্লেষণ করে তৈরি ২৫টি করে মোট ৫০টি "হাই-ভোল্টেজ" প্রশ্ন। 
+                    প্রতিটি টেস্টের সময় ২৫ মিনিট। ক্যালকুলেটর ব্যবহার নিষিদ্ধ।
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Test Card 1 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 bg-sky-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">Most Common</div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">মডেল টেস্ট - ০১</h3>
+                    <p class="text-sm text-slate-500 mb-4">টপিক: ভেক্টর, গতিবিদ্যা, কাজ শক্তি, মহাকর্ষ, গাঠনিক ধর্ম, আদর্শ গ্যাস।</p>
+                    <ul class="text-sm text-slate-600 space-y-2 mb-6">
+                        <li class="flex items-center gap-2">📝 প্রশ্ন সংখ্যা: ২৫টি</li>
+                        <li class="flex items-center gap-2">⏱ সময়: ২৫ মিনিট</li>
+                        <li class="flex items-center gap-2">🚫 নেগেটিভ মার্কিং: ০.২৫</li>
+                    </ul>
+                    <button onclick="startTest(1)" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors">পরীক্ষা শুরু করুন</button>
+                </div>
+
+                <!-- Test Card 2 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow relative overflow-hidden group">
+                     <div class="absolute top-0 right-0 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">Advanced</div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">মডেল টেস্ট - ০২</h3>
+                    <p class="text-sm text-slate-500 mb-4">টপিক: তাপগতিবিদ্যা, স্থির তড়িৎ, চল তড়িৎ, আলোকবিজ্ঞান, আধুনিক পদার্থ।</p>
+                    <ul class="text-sm text-slate-600 space-y-2 mb-6">
+                        <li class="flex items-center gap-2">📝 প্রশ্ন সংখ্যা: ২৫টি</li>
+                        <li class="flex items-center gap-2">⏱ সময়: ২৫ মিনিট</li>
+                        <li class="flex items-center gap-2">🚫 নেগেটিভ মার্কিং: ০.২৫</li>
+                    </ul>
+                    <button onclick="startTest(2)" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors">পরীক্ষা শুরু করুন</button>
+                </div>
+            </div>
+            
+            <!-- Instructions -->
+            <div class="mt-12 bg-sky-50 rounded-xl p-6 border border-sky-100">
+                <h4 class="font-bold text-sky-900 mb-2">⚠️ পরীক্ষার্থীর নির্দেশনা:</h4>
+                <ul class="list-disc list-inside text-sm text-sky-800 space-y-1">
+                    <li>কোনো প্রকার ক্যালকুলেটর ব্যবহার করা যাবে না।</li>
+                    <li>প্রতিটি ভুল উত্তরের জন্য ০.২৫ নম্বর কাটা যাবে।</li>
+                    <li>সাবমিট করার পর বিস্তারিত সমাধান ও শর্টকাট দেখতে পাবে।</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- View 2: Exam Interface -->
+        <div id="view-exam" class="hidden max-w-3xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <h3 id="exam-title" class="font-bold text-lg">মডেল টেস্ট চলমান...</h3>
+                    <span id="question-count" class="text-sm font-medium text-slate-500">1 / 25</span>
+                </div>
+                
+                <!-- Question Container -->
+                <div id="questions-container" class="p-6 space-y-8 question-list max-h-[70vh] overflow-y-auto">
+                    <!-- Questions injected by JS -->
+                </div>
+
+                <div class="p-6 border-t border-slate-100 bg-slate-50 flex justify-end">
+                    <button onclick="submitTest()" class="bg-sky-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-sky-700 shadow-lg shadow-sky-200 transition-all">সাবমিট করুন</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 3: Results -->
+        <div id="view-result" class="hidden max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Score Card -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 text-center">
+                    <h3 class="text-slate-500 font-medium mb-2">আপনার স্কোর</h3>
+                    <div id="score-display" class="text-5xl font-black text-slate-800 mb-2">0.00</div>
+                    <p class="text-sm text-slate-400">মোট নম্বর: ২৫.০০</p>
+                    <div id="pass-status" class="mt-4 inline-block px-4 py-1 rounded-full text-sm font-bold bg-slate-100">...</div>
+                </div>
+
+                <!-- Chart Card -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <h3 class="text-slate-500 font-medium mb-4 text-center">বিশ্লেষণ</h3>
+                    <div class="chart-container">
+                        <canvas id="resultChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Solutions -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-6 bg-slate-800 text-white">
+                    <h3 class="font-bold text-lg">📝 বিস্তারিত সমাধান ও ব্যাখ্যা</h3>
+                </div>
+                <div id="solution-container" class="divide-y divide-slate-100">
+                    <!-- Solutions injected JS -->
+                </div>
+            </div>
+            
+            <div class="mt-8 text-center">
+                <button onclick="goHome()" class="bg-slate-200 text-slate-700 px-6 py-3 rounded-xl font-bold hover:bg-slate-300">অন্য টেস্ট দিন</button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Data & Logic -->
+    <script>
+        // --- DATA STORE ---
+        const testData = {
+            1: [
+                {
+                    id: 1,
+                    q: "দুটি ভেক্টরের স্কেলার গুণফল ১৮ একক এবং ভেক্টর গুণফলের মান ৬√৩ একক। ভেক্টরদ্বয়ের মধ্যবর্তী কোণ কত?",
+                    options: ["৩০°", "৬০°", "৪৫°", "৯০°"],
+                    correct: 0,
+                    topic: "Vector",
+                    explanation: "আমরা জানি, tanθ = (AxB) / (A.B) = 6√3 / 18 = √3/3 = 1/√3। সুতরাং θ = 30°।"
+                },
+                {
+                    id: 2,
+                    q: "যদি A = 2i + 2j - k এবং B = 6i - 3j + 2k হয়, তবে A ও B এর মধ্যবর্তী কোণ কত?",
+                    options: ["cos⁻¹(4/21)", "sin⁻¹(4/21)", "cos⁻¹(11/21)", "90°"],
+                    correct: 0,
+                    topic: "Vector",
+                    explanation: "A.B = (2)(6) + (2)(-3) + (-1)(2) = 12 - 6 - 2 = 4। |A|=3, |B|=7। cosθ = A.B / |A||B| = 4/21।"
+                },
+                {
+                    id: 3,
+                    q: "একটি কণার অবস্থান ভেক্টর r = (3t²)i + (4t²)j + 7k। 2 sec পর কণাটির বেগ কত?",
+                    options: ["10 unit", "14 unit", "20 unit", "25 unit"],
+                    correct: 2,
+                    topic: "Mechanics",
+                    explanation: "v = dr/dt = 6ti + 8tj। t=2 হলে, v = 12i + 16j। মান = √(144+256) = √400 = 20।"
+                },
+                {
+                    id: 4,
+                    q: "স্থির অবস্থা থেকে যাত্রা শুরু করে একটি বস্তু প্রথম সেকেন্ডে ১ মিটার দূরত্ব অতিক্রম করে। পরবর্তী ১ সেকেন্ডে কত দূরত্ব অতিক্রম করবে?",
+                    options: ["১ মি", "২ মি", "৩ মি", "৪ মি"],
+                    correct: 2,
+                    topic: "Mechanics",
+                    explanation: "দূরত্ব সময়ের বর্গের সমানুপাতিক (S ∝ t²)। ২য় সেকেন্ডে অতিক্রান্ত দূরত্ব = S(2) - S(1) = 2² - 1² = 3 গুণ। 3x1 = 3 মি।"
+                },
+                {
+                    id: 5,
+                    q: "১০ কেজি ভরের একটি বস্তুর উপর ২ নিউটন বল প্রয়োগ করা হলে, ৪ সেকেন্ড পর ভরবেগ কত হবে?",
+                    options: ["৮ kg ms⁻¹", "১০ kg ms⁻¹", "২০ kg ms⁻¹", "৪০ kg ms⁻¹"],
+                    correct: 0,
+                    topic: "Mechanics",
+                    explanation: "ভরবেগের পরিবর্তন = বল × সময় (Impulse)। ΔP = F × t = 2 × 4 = 8 kg ms⁻¹।"
+                },
+                {
+                    id: 6,
+                    q: "একটি স্প্রিং এর স্প্রিং ধ্রুবক K। একে কেটে সমান দুই টুকরা করা হলে প্রতি টুকরার ধ্রুবক কত হবে?",
+                    options: ["K", "K/2", "2K", "4K"],
+                    correct: 2,
+                    topic: "Mechanics",
+                    explanation: "স্প্রিং ধ্রুবক দৈর্ঘ্যের ব্যস্তানুপাতিক (K ∝ 1/L)। দৈর্ঘ্য অর্ধেক হলে K দ্বিগুণ হবে (2K)।"
+                },
+                {
+                    id: 7,
+                    q: "মহাকর্ষীয় ধ্রুবক G এর মাত্রা কোনটি?",
+                    options: ["M⁻¹L³T⁻²", "MLT⁻²", "ML²T⁻²", "M⁻²L³T⁻²"],
+                    correct: 0,
+                    topic: "Gravity",
+                    explanation: "F = GmM/r² => G = Fr²/mM = (MLT⁻²)(L²)/(M²) = M⁻¹L³T⁻²।"
+                },
+                {
+                    id: 8,
+                    q: "ভূপৃষ্ঠে মুক্তিবেগ ১১.২ কিমি/সে। কোনো গ্রহের ভর ও ব্যাসার্ধ পৃথিবীর দ্বিগুণ হলে সেখানে মুক্তিবেগ কত?",
+                    options: ["১১.২ কিমি/সে", "২২.৪ কিমি/সে", "৫.৬ কিমি/সে", "১৫.৮ কিমি/সে"],
+                    correct: 0,
+                    topic: "Gravity",
+                    explanation: "Ve = √(2GM/R)। M ও R উভয়ই দ্বিগুণ হলে, Ve' = √(2G(2M)/(2R)) = √(2GM/R) = Ve = ১১.২।"
+                },
+                {
+                    id: 9,
+                    q: "পানির ফোঁটা গোলাকার হওয়ার কারণ কী?",
+                    options: ["সান্দ্রতা", "পৃষ্ঠটান", "চাপ", "প্লবতা"],
+                    correct: 1,
+                    topic: "Properties of Matter",
+                    explanation: "পৃষ্ঠটানের কারণে তরল তার পৃষ্ঠের ক্ষেত্রফল সর্বনিম্ন করতে চায়, আর গোলকের ক্ষেত্রফল সর্বনিম্ন।"
+                },
+                {
+                    id: 10,
+                    q: "ইয়ং এর গুণাঙ্ক (Y), পয়সনের অনুপাত (σ) হলে কোনটি সঠিক?",
+                    options: ["Y = 3K(1-2σ)", "Y = 2η(1+σ)", "উভয়ই", "কোনোটিই নয়"],
+                    correct: 2,
+                    topic: "Properties of Matter",
+                    explanation: "Y, K, η এবং σ এর সম্পর্কের সূত্র অনুযায়ী উভয় সমীকরণই সঠিক।"
+                },
+                {
+                    id: 11,
+                    q: "কোন তাপমাত্রায় সেলসিয়াস ও ফারেনহাইট স্কেলে একই পাঠ দেয়?",
+                    options: ["-40°", "40°", "160°", "-160°"],
+                    correct: 0,
+                    topic: "Heat",
+                    explanation: "C/5 = (F-32)/9 সমীকরণে C=F=x বসালে x = -40 পাওয়া যায়।"
+                },
+                {
+                    id: 12,
+                    q: "রুদ্ধতাপীয় প্রক্রিয়ায় কোনটি স্থির থাকে?",
+                    options: ["তাপমাত্রা", "চাপ", "এনট্রপি", "আয়তন"],
+                    correct: 2,
+                    topic: "Thermodynamics",
+                    explanation: "রুদ্ধতাপীয় প্রক্রিয়ায় সিস্টেমের তাপের আদান প্রদান হয় না (dQ=0), ফলে এনট্রপি স্থির থাকে (dS=dQ/T=0)।"
+                },
+                {
+                    id: 13,
+                    q: "কার্নো ইঞ্জিনের উৎস ও গ্রাহকের তাপমাত্রা যথাক্রমে 900K ও 300K। দক্ষতা কত?",
+                    options: ["33%", "50%", "66.6%", "100%"],
+                    correct: 2,
+                    topic: "Thermodynamics",
+                    explanation: "Efficiency η = (1 - T2/T1) × 100% = (1 - 300/900) × 100% = 2/3 × 100% ≈ 66.6%."
+                },
+                {
+                    id: 14,
+                    q: "শব্দের তীব্রতা লেভেল ৩০ dB বাড়লে তীব্রতা কত গুণ বাড়বে?",
+                    options: ["১০ গুণ", "১০০ গুণ", "১০০০ গুণ", "৩০ গুণ"],
+                    correct: 2,
+                    topic: "Sound",
+                    explanation: "ΔdB = 10 log(I2/I1)। 30 = 10 log(Ratio) => log(Ratio)=3 => Ratio = 10³ = 1000।"
+                },
+                {
+                    id: 15,
+                    q: "একটি টানা তারের টান ৪ গুণ করলে কম্পাঙ্ক কত হবে?",
+                    options: ["দ্বিগুণ", "অর্ধেক", "৪ গুণ", "১৬ গুণ"],
+                    correct: 0,
+                    topic: "Sound",
+                    explanation: "কম্পাঙ্ক টানের বর্গমূলের সমানুপাতিক (f ∝ √T)। টান ৪ গুণ হলে কম্পাঙ্ক √4 = ২ গুণ হবে।"
+                },
+                {
+                    id: 16,
+                    q: "আদর্শ গ্যাসের ক্ষেত্রে Cp - Cv = ?",
+                    options: ["R", "R/J", "4.2 J", "0"],
+                    correct: 0,
+                    topic: "Ideal Gas",
+                    explanation: "মোলার আপেক্ষিক তাপদ্বয়ের পার্থক্য সর্বজনীন গ্যাস ধ্রুবক R এর সমান।"
+                },
+                {
+                    id: 17,
+                    q: "গড় বর্গবেগের বর্গমূল (RMS) ও পরম তাপমাত্রার সম্পর্ক কী?",
+                    options: ["C ∝ T", "C ∝ √T", "C ∝ T²", "C ∝ 1/T"],
+                    correct: 1,
+                    topic: "Ideal Gas",
+                    explanation: "C_rms = √(3RT/M), সুতরাং C ∝ √T।"
+                },
+                {
+                    id: 18,
+                    q: "সরল দোলকের বিস্তার ৪° এর বেশি হলে কী ঘটবে?",
+                    options: ["গতি সরললৈখিক থাকবে না", "দোলনকাল অসীম হবে", "গতিবেগ শূন্য হবে", "কোনোটিই নয়"],
+                    correct: 0,
+                    topic: "SHM",
+                    explanation: "সরল দোলকের সূত্রগুলো কেবল কৌণিক বিস্তার ৪° এর মধ্যে কার্যকর। এর বেশি হলে গতি আর সরললৈখিক হারমোনিক থাকে না।"
+                },
+                {
+                    id: 19,
+                    q: "একটি সেকেন্ড দোলককে পাহাড়ে নিলে এটি -",
+                    options: ["দ্রুত চলবে", "ধীরে চলবে", "একই থাকবে", "থামবে"],
+                    correct: 1,
+                    topic: "SHM",
+                    explanation: "পাহাড়ে g এর মান কমে। T = 2π√(L/g)। g কমলে T বাড়ে, অর্থাৎ দোলকটি একটি দোলন সম্পন্ন করতে বেশি সময় নেয়, তাই ধীরে চলে।"
+                },
+                {
+                    id: 20,
+                    q: "পানির ত্রৈধ বিন্দুর তাপমাত্রা কত?",
+                    options: ["273 K", "273.16 K", "373 K", "0 K"],
+                    correct: 1,
+                    topic: "Heat",
+                    explanation: "পানির ত্রৈধ বিন্দু (Triple Point) হলো 273.16 K বা 0.01°C।"
+                },
+                {
+                    id: 21,
+                    q: "কোন লেখচিত্রটি বয়েলের সূত্র সমর্থন করে?",
+                    options: ["P vs V (সরলরেখা)", "P vs 1/V (মূলবিন্দুগামী সরলরেখা)", "PV vs P (অধিবৃত্ত)", "V vs T (সরলরেখা)"],
+                    correct: 1,
+                    topic: "Ideal Gas",
+                    explanation: "বয়েলের সূত্র P ∝ 1/V। তাই P বনাম 1/V গ্রাফটি মূলবিন্দুগামী সরলরেখা হবে।"
+                },
+                {
+                    id: 22,
+                    q: "ভেক্টরের ডট গুণন কোন সূত্র মেনে চলে?",
+                    options: ["বিনিময় সূত্র", "বন্টন সূত্র", "উভয়ই", "কোনোটিই নয়"],
+                    correct: 2,
+                    topic: "Vector",
+                    explanation: "ডট গুণন বিনিময় (A.B = B.A) এবং বন্টন উভয় সূত্রই মেনে চলে।"
+                },
+                {
+                    id: 23,
+                    q: "মহাকাশে একজন নভোচারীর কাছে একটি সেকেন্ড দোলকের কম্পাঙ্ক কত?",
+                    options: ["অসীম", "শূন্য", "0.5 Hz", "1 Hz"],
+                    correct: 1,
+                    topic: "Gravity",
+                    explanation: "মহাকাশে g = 0, তাই দোলনকাল T = অসীম। কম্পাঙ্ক f = 1/T = 1/∞ = 0 Hz।"
+                },
+                {
+                    id: 24,
+                    q: "সান্দ্রতা গুণাঙ্কের একক কোনটি?",
+                    options: ["Pa-s", "N-m", "J-s", "Watt"],
+                    correct: 0,
+                    topic: "Properties of Matter",
+                    explanation: "সান্দ্রতা গুণাঙ্কের SI একক প্যাসকেল-সেকেন্ড (Pa-s) বা পয়স (Poise)।"
+                },
+                {
+                    id: 25,
+                    q: "নিচের কোনটি স্কেলার রাশি?",
+                    options: ["তড়িৎ প্রাবল্য", "তড়িৎ বিভব", "চৌম্বক প্রাবল্য", "বেগ"],
+                    correct: 1,
+                    topic: "Vector",
+                    explanation: "কাজ, শক্তি, বিভব - এগুলো সর্বদা স্কেলার রাশি।"
+                }
+            ],
+            2: [
+                {
+                    id: 1,
+                    q: "দুটি সমান্তরাল পরিবাহীর মধ্য দিয়ে একই দিকে বিদ্যুৎ প্রবাহিত হলে তারা পরস্পরকে-",
+                    options: ["আকর্ষণ করে", "বিকর্ষণ করে", "স্থির থাকে", "ঘোরে"],
+                    correct: 0,
+                    topic: "Electricity",
+                    explanation: "একই দিকে প্রবাহ হলে চৌম্বক ক্ষেত্রের প্রভাবে তার দুটি পরস্পরকে আকর্ষণ করে।"
+                },
+                {
+                    id: 2,
+                    q: "একটি তারের রোধ R। একে টেনে দৈর্ঘ্য দ্বিগুণ করলে নতুন রোধ কত হবে?",
+                    options: ["2R", "4R", "R/2", "R/4"],
+                    correct: 1,
+                    topic: "Electricity",
+                    explanation: "টানলে আয়তন স্থির থাকে, তাই দৈর্ঘ্য দ্বিগুণ হলে প্রস্থচ্ছেদ অর্ধেক হয়। R' = ρ(2L)/(A/2) = 4(ρL/A) = 4R।"
+                },
+                {
+                    id: 3,
+                    q: "গ্যালভানোমিটারকে ভোল্টমিটারে রূপান্তর করতে হলে কী করতে হয়?",
+                    options: ["সমান্তরালে নিম্ন রোধ", "শ্রেণিতে উচ্চ রোধ", "শ্রেণিতে নিম্ন রোধ", "সমান্তরালে উচ্চ রোধ"],
+                    correct: 1,
+                    topic: "Electronics",
+                    explanation: "ভোল্টমিটারের রোধ অসীম হওয়া বাঞ্ছনীয়, তাই গ্যালভানোমিটারের সাথে শ্রেণিতে উচ্চ মানের রোধ যুক্ত করা হয়।"
+                },
+                {
+                    id: 4,
+                    q: "1 unit বিদ্যুৎ বলতে কী বোঝায়?",
+                    options: ["1 J", "1 Watt", "1 kWh", "1 HP"],
+                    correct: 2,
+                    topic: "Electricity",
+                    explanation: "বাণিজ্যিক একক 1 unit = 1 Kilowatt-hour (kWh)।"
+                },
+                {
+                    id: 5,
+                    q: "আলোর ব্যতিচারের ক্ষেত্রে শক্তি-",
+                    options: ["সৃষ্টি হয়", "ধ্বংস হয়", "সংরক্ষিত থাকে", "শোষিত হয়"],
+                    correct: 2,
+                    topic: "Optics",
+                    explanation: "ব্যতিচারে শক্তি কেবল এক স্থান (অন্ধকার) থেকে অন্য স্থানে (উজ্জ্বল) স্থানান্তরিত হয়, মোট শক্তি সংরক্ষিত থাকে।"
+                },
+                {
+                    id: 6,
+                    q: "ইয়াং এর দ্বি-চির পরীক্ষায় চিরদ্বয়ের দূরত্ব অর্ধেক করলে ডোরা প্রস্থ কত হবে?",
+                    options: ["অর্ধেক", "দ্বিগুণ", "চারগুণ", "একই"],
+                    correct: 1,
+                    topic: "Optics",
+                    explanation: "ডোরা প্রস্থ β = λD/d। অর্থাৎ β ∝ 1/d। d অর্ধেক করলে β দ্বিগুণ হবে।"
+                },
+                {
+                    id: 7,
+                    q: "লেন্সের ক্ষমতা +2D হলে এর ফোকাস দূরত্ব কত?",
+                    options: ["20 cm", "50 cm", "100 cm", "200 cm"],
+                    correct: 1,
+                    topic: "Optics",
+                    explanation: "P = 1/f (মিটার এককে)। f = 1/P = 1/2 = 0.5 m = 50 cm।"
+                },
+                {
+                    id: 8,
+                    q: "আলোর তরঙ্গ তত্ত্ব কে প্রদান করেন?",
+                    options: ["নিউটন", "হাইগেন", "ম্যাক্সওয়েল", "আইনস্টাইন"],
+                    correct: 1,
+                    topic: "Optics",
+                    explanation: "হাইগেন আলোর তরঙ্গ তত্ত্ব এবং নিউটন কণিকা তত্ত্ব প্রদান করেন।"
+                },
+                {
+                    id: 9,
+                    q: "ফোটনের স্থির ভর (Rest Mass) কত?",
+                    options: ["1.6x10⁻¹⁹ kg", "9.1x10⁻³¹ kg", "শূন্য", "অসীম"],
+                    correct: 2,
+                    topic: "Modern Physics",
+                    explanation: "ফোটন সর্বদা আলোর বেগে চলে, তাই এর কোনো স্থির ভর নেই।"
+                },
+                {
+                    id: 10,
+                    q: "তেজস্ক্রিয় মৌলের অর্ধায়ু T হলে গড় আয়ু τ কত?",
+                    options: ["τ = 1.44 T", "τ = 0.693 T", "τ = T", "τ = T/0.693"],
+                    correct: 0,
+                    topic: "Modern Physics",
+                    explanation: "গড় আয়ু τ = 1/λ = T/0.693 ≈ 1.44 T।"
+                },
+                {
+                    id: 11,
+                    q: "আইনস্টাইনের আলোক তড়িৎ সমীকরণ কোনটি?",
+                    options: ["E = mc²", "hν = W + K_max", "λ = h/p", "E = hν"],
+                    correct: 1,
+                    topic: "Modern Physics",
+                    explanation: "আপতিত ফোটনের শক্তি = কার্যঅপেক্ষক + সর্বোচ্চ গতিশক্তি (hν = W + K_max)।"
+                },
+                {
+                    id: 12,
+                    q: "1 eV শক্তি কত জুলের সমান?",
+                    options: ["1.6x10⁻¹⁹ J", "9.1x10⁻³¹ J", "3x10⁸ J", "1 J"],
+                    correct: 0,
+                    topic: "Modern Physics",
+                    explanation: "1 Electron-Volt (eV) = 1.6 × 10⁻¹⁹ Joule."
+                },
+                {
+                    id: 13,
+                    q: "p-টাইপ অর্ধপরিবাহীতে গরিষ্ঠ আধান বাহক কোনটি?",
+                    options: ["ইলেকট্রন", "হোল (Hole)", "প্রোটন", "নিউট্রন"],
+                    correct: 1,
+                    topic: "Electronics",
+                    explanation: "p-টাইপ (Positive Type) এ হোল বা গর্ত হলো মেজর বা গরিষ্ঠ বাহক।"
+                },
+                {
+                    id: 14,
+                    q: "নিচের কোনটি সর্বজনীন গেইট?",
+                    options: ["AND", "OR", "NOR", "XOR"],
+                    correct: 2,
+                    topic: "Electronics",
+                    explanation: "NAND এবং NOR গেইটকে সর্বজনীন গেইট বলা হয় কারণ এগুলো দিয়ে যেকোনো গেইট তৈরি সম্ভব।"
+                },
+                {
+                    id: 15,
+                    q: "শূণ্যের মধ্যে প্রবেশ্যতা (μ₀) এর মান কত?",
+                    options: ["9x10⁹", "8.85x10⁻¹²", "4πx10⁻⁷", "1.6x10⁻¹⁹"],
+                    correct: 2,
+                    topic: "Magnetism",
+                    explanation: "μ₀ = 4π × 10⁻⁷ TmA⁻¹।"
+                },
+                {
+                    id: 16,
+                    q: "ট্রান্সফর্মারে কোনটি অপরিবর্তিত থাকে?",
+                    options: ["ভোল্টেজ", "প্রবাহ", "ক্ষমতা ও কম্পাঙ্ক", "রোধ"],
+                    correct: 2,
+                    topic: "Electricity",
+                    explanation: "ট্রান্সফর্মার ভোল্টেজ বা কারেন্ট পরিবর্তন করলেও ক্ষমতা (আদর্শ ক্ষেত্রে) এবং ফ্রিকোয়েন্সি বা কম্পাঙ্ক অপরিবর্তিত রাখে।"
+                },
+                {
+                    id: 17,
+                    q: "ধারকের সঞ্চিত শক্তির রাশিমালা কোনটি?",
+                    options: ["CV²", "1/2 CV²", "1/2 QV²", "Q/V"],
+                    correct: 1,
+                    topic: "Electricity",
+                    explanation: "U = 1/2 CV² = 1/2 Q²/C = 1/2 QV।"
+                },
+                {
+                    id: 18,
+                    q: "কারশফের ২য় সূত্রটি কোন নিত্যতা সূত্রের প্রকাশ?",
+                    options: ["আধান", "শক্তি", "ভরবেগ", "ভর"],
+                    correct: 1,
+                    topic: "Electricity",
+                    explanation: "কারশফের ভোল্টেজ সূত্র (KVL) মূলত শক্তির সংরক্ষণশীলতা নীতি মেনে চলে।"
+                },
+                {
+                    id: 19,
+                    q: "আলোর সমবর্তন (Polarization) প্রমাণ করে যে আলো একটি-",
+                    options: ["অণুদৈর্ঘ্য তরঙ্গ", "অণুপ্রস্থ তরঙ্গ", "কণিকা", "কোনোটিই নয়"],
+                    correct: 1,
+                    topic: "Optics",
+                    explanation: "কেবল অণুপ্রস্থ তরঙ্গ বা আড় তরঙ্গেরই সমবর্তন সম্ভব।"
+                },
+                {
+                    id: 20,
+                    q: "একটি তেজস্ক্রিয় পদার্থের ৩টি অর্ধায়ু অতিবাহিত হলে কত অংশ অবশিষ্ট থাকবে?",
+                    options: ["১/২", "১/৪", "১/৮", "১/১৬"],
+                    correct: 2,
+                    topic: "Modern Physics",
+                    explanation: "অবশিষ্ট অংশ = (১/২)ⁿ = (১/২)³ = ১/৮ অংশ।"
+                },
+                {
+                    id: 21,
+                    q: "ডায়োড রেকটিফায়ার হিসেবে কাজ করে, এর অর্থ এটি-",
+                    options: ["AC কে DC করে", "DC কে AC করে", "ভোল্টেজ বাড়ায়", "ভোল্টেজ কমায়"],
+                    correct: 0,
+                    topic: "Electronics",
+                    explanation: "রেকটিফায়ার বা একমুখীকরক পরিবর্তী প্রবাহকে (AC) একমুখী প্রবাহে (DC) রূপান্তর করে।"
+                },
+                {
+                    id: 22,
+                    q: "ভূ-চৌম্বক ক্ষেত্রের অনুভূমিক উপাংশ কোথায় শূন্য?",
+                    options: ["বিষুব রেখায়", "মেরু বিন্দুতে", "ক্রান্তীয় অঞ্চলে", "সব জায়গায়"],
+                    correct: 1,
+                    topic: "Magnetism",
+                    explanation: "মেরু বিন্দুতে বিনতি কোণ ৯০°, তাই অনুভূমিক উপাংশ H = R cos90° = 0।"
+                },
+                {
+                    id: 23,
+                    q: "কুলম্ব বল কোন ধরণের বল?",
+                    options: ["মহাকর্ষীয়", "তড়িৎচৌম্বকীয়", "দুর্বল নিউক্লীয়", "সবল নিউক্লীয়"],
+                    correct: 1,
+                    topic: "Electricity",
+                    explanation: "চার্জিত কণার মধ্যবর্তী আকর্ষণ-বিকর্ষণ বল হলো তড়িৎচৌম্বকীয় বল।"
+                },
+                {
+                    id: 24,
+                    q: "বোরের স্বীকার্য অনুযায়ী কৌণিক ভরবেগ (L) =",
+                    options: ["nh/2π", "nh/4π", "mv²/r", "nhν"],
+                    correct: 0,
+                    topic: "Modern Physics",
+                    explanation: "বোরের ২য় স্বীকার্য মতে, L = mvr = nh/2π।"
+                },
+                {
+                    id: 25,
+                    q: "1 amu ভরের সমতুল্য শক্তি কত?",
+                    options: ["931.5 MeV", "931.5 J", "1 MeV", "9.8 MeV"],
+                    correct: 0,
+                    topic: "Modern Physics",
+                    explanation: "1 Atomic Mass Unit (amu) শক্তিতে রূপান্তরিত হলে প্রায় 931.5 Mega Electron Volt শক্তি পাওয়া যায়।"
+                }
+            ]
+        };
+
+        // --- STATE MANAGEMENT ---
+        let currentTestId = null;
+        let userAnswers = {};
+        let testTimer = null;
+        let timeRemaining = 25 * 60; // 25 minutes in seconds
+
+        // --- FUNCTIONS ---
+
+        function startTest(testId) {
+            currentTestId = testId;
+            userAnswers = {};
+            timeRemaining = 25 * 60;
+            
+            // UI Toggle
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-result').classList.add('hidden');
+            document.getElementById('view-exam').classList.remove('hidden');
+            document.getElementById('timer-display').classList.remove('hidden');
+
+            // Set Title
+            document.getElementById('exam-title').innerText = `মডেল টেস্ট - ০${testId} (ফিজিক্স)`;
+
+            // Render Questions
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+            
+            testData[testId].forEach((item, index) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = "bg-white p-4 rounded-xl border border-slate-100 shadow-sm";
+                qDiv.innerHTML = `
+                    <div class="flex gap-3 mb-4">
+                        <span class="bg-slate-800 text-white font-bold w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0">${index + 1}</span>
+                        <h4 class="text-slate-800 font-semibold text-lg leading-relaxed">${item.q}</h4>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pl-11">
+                        ${item.options.map((opt, optIndex) => `
+                            <div>
+                                <input type="radio" name="q-${item.id}" id="q-${item.id}-opt-${optIndex}" value="${optIndex}" class="hidden option-radio" onchange="saveAnswer(${item.id}, ${optIndex})">
+                                <label for="q-${item.id}-opt-${optIndex}" class="block p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-slate-600">
+                                    <span class="font-bold mr-2 text-slate-400">${String.fromCharCode(97+optIndex)})</span> ${opt}
+                                </label>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(qDiv);
+            });
+
+            // Start Timer
+            if (testTimer) clearInterval(testTimer);
+            testTimer = setInterval(updateTimer, 1000);
+            updateTimer();
+        }
+
+        function saveAnswer(qId, optIndex) {
+            userAnswers[qId] = optIndex;
+            
+            // Update progress counter
+            const answeredCount = Object.keys(userAnswers).length;
+            document.getElementById('question-count').innerText = `${answeredCount} / 25 উত্তর দেওয়া হয়েছে`;
+        }
+
+        function updateTimer() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            document.getElementById('timer-display').innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeRemaining <= 0) {
+                submitTest();
+            } else {
+                timeRemaining--;
+            }
+        }
+
+        function submitTest() {
+            clearInterval(testTimer);
+            
+            // Calculate Score
+            let score = 0;
+            let correctCount = 0;
+            let wrongCount = 0;
+            let skippedCount = 0;
+            const questions = testData[currentTestId];
+            
+            // Data for Charts
+            const topicStats = {};
+
+            questions.forEach(q => {
+                // Initialize topic stats
+                if(!topicStats[q.topic]) topicStats[q.topic] = { total: 0, correct: 0 };
+                topicStats[q.topic].total++;
+
+                if (userAnswers[q.id] === undefined) {
+                    skippedCount++;
+                } else if (userAnswers[q.id] === q.correct) {
+                    score += 1.25;
+                    correctCount++;
+                    topicStats[q.topic].correct++;
+                } else {
+                    score -= 0.25;
+                    wrongCount++;
+                }
+            });
+
+            // Pass/Fail Logic (Pass mark assumed 10 for model test context)
+            const passStatus = document.getElementById('pass-status');
+            if(score >= 10) {
+                passStatus.innerText = "অভিনন্দন! আপনি পাস করেছেন";
+                passStatus.className = "mt-4 inline-block px-4 py-1 rounded-full text-sm font-bold bg-emerald-100 text-emerald-700";
+            } else {
+                passStatus.innerText = "দুঃখিত, আরও প্রস্তুতি প্রয়োজন";
+                passStatus.className = "mt-4 inline-block px-4 py-1 rounded-full text-sm font-bold bg-rose-100 text-rose-700";
+            }
+
+            document.getElementById('score-display').innerText = score.toFixed(2);
+
+            // Render Charts
+            renderResultCharts(correctCount, wrongCount, skippedCount, topicStats);
+
+            // Render Solutions
+            renderSolutions(questions);
+
+            // Switch Views
+            document.getElementById('view-exam').classList.add('hidden');
+            document.getElementById('timer-display').classList.add('hidden');
+            document.getElementById('view-result').classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+        function renderSolutions(questions) {
+            const container = document.getElementById('solution-container');
+            container.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const userAns = userAnswers[q.id];
+                let statusClass = "border-l-4 border-slate-300"; // Skipped
+                let statusText = "উত্তর করা হয়নি";
+                let statusColor = "text-slate-500";
+
+                if (userAns !== undefined) {
+                    if (userAns === q.correct) {
+                        statusClass = "border-l-4 border-emerald-500 bg-emerald-50/30";
+                        statusText = "সঠিক উত্তর";
+                        statusColor = "text-emerald-600";
+                    } else {
+                        statusClass = "border-l-4 border-rose-500 bg-rose-50/30";
+                        statusText = "ভুল উত্তর";
+                        statusColor = "text-rose-600";
+                    }
+                }
+
+                const solDiv = document.createElement('div');
+                solDiv.className = `p-6 ${statusClass}`;
+                solDiv.innerHTML = `
+                    <div class="flex justify-between mb-2">
+                        <span class="font-bold text-slate-800">প্রশ্ন ${index + 1}</span>
+                        <span class="text-xs font-bold ${statusColor} uppercase">${statusText}</span>
+                    </div>
+                    <p class="text-slate-800 font-medium mb-4">${q.q}</p>
+                    
+                    <div class="grid grid-cols-2 gap-2 text-sm mb-4">
+                        ${q.options.map((opt, i) => `
+                            <div class="p-2 rounded border ${i === q.correct ? 'bg-emerald-100 border-emerald-300 text-emerald-800 font-bold' : (i === userAns ? 'bg-rose-100 border-rose-300 text-rose-800' : 'bg-white border-slate-200 text-slate-500')}">
+                                ${opt} ${i === q.correct ? '✅' : ''} ${i === userAns && i !== q.correct ? '❌' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="bg-slate-100 p-4 rounded-lg text-sm">
+                        <strong class="text-slate-700 block mb-1">💡 ব্যাখ্যা / শর্টকাট:</strong>
+                        <p class="text-slate-600 leading-relaxed">${q.explanation}</p>
+                    </div>
+                `;
+                container.appendChild(solDiv);
+            });
+        }
+
+        let chartInstance = null;
+
+        function renderResultCharts(correct, wrong, skipped, topicStats) {
+            const ctx = document.getElementById('resultChart').getContext('2d');
+            
+            if(chartInstance) chartInstance.destroy();
+
+            // Prepare Radar Data (Topic Strength)
+            const labels = Object.keys(topicStats);
+            const dataPoints = labels.map(topic => (topicStats[topic].correct / topicStats[topic].total) * 100);
+
+            chartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'টপিক দক্ষতা (%)',
+                        data: dataPoints,
+                        backgroundColor: 'rgba(2, 132, 199, 0.2)',
+                        borderColor: '#0284c7',
+                        pointBackgroundColor: '#0284c7'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { display: false },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        function goHome() {
+            document.getElementById('view-result').classList.add('hidden');
+            document.getElementById('view-exam').classList.add('hidden');
+            document.getElementById('timer-display').classList.add('hidden');
+            document.getElementById('view-home').classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+    </script>
+</body>
+</html>
